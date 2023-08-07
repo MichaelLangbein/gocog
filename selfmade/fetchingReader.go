@@ -35,8 +35,8 @@ type FetchingReader struct {
 	fetchedData     map[int64][]byte
 }
 
-func MakeFetchingReader(fileUrl string) FetchingReader {
-	return FetchingReader{
+func MakeFetchingReader(fileUrl string) *FetchingReader {
+	return &FetchingReader{
 		fileUrl: fileUrl, fetchBytes: 4000, currentLocation: 0, fetchedData: map[int64][]byte{},
 	}
 }

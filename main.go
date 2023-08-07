@@ -27,7 +27,7 @@ func main() {
 	fileUrl := "http://localhost:8000/testfile.tiff"
 	cogReader := selfmade.MakeFetchingReader(fileUrl)
 
-	t, _ := tiff.Parse(&cogReader, nil, nil)
+	t, _ := tiff.Parse(cogReader, nil, nil)
 
 	firstIfd := t.IFDs()[0]
 	tileOffsetsField := firstIfd.GetField(324)
