@@ -1,11 +1,19 @@
 package main
 
+// https://github.com/geotiffjs/geotiff.js/blob/master/src/geotiff.js
+// http://paulbourke.net/dataformats/tiff/tiff_summary.pdf
+// https://www.awaresystems.be/imaging/tiff/tifftags.html
+// https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
+
 // Plan:
 // 1. create file ................. done
 // 2. host file ................... done (making sure http-range requests are supported)
 // 3. fetch file .................. done
 // 4. fetch head only ............. done
 // 5. parse head .................. done
+// 6. get tile
+// 7. decompress tile
+// 8. get all tiles
 
 import (
 	"encoding/binary"
@@ -52,9 +60,6 @@ func readVersion(word []byte, byteOrder binary.ByteOrder) (uint16, error) {
 	return version, nil
 }
 
-// http://paulbourke.net/dataformats/tiff/tiff_summary.pdf
-// https://www.awaresystems.be/imaging/tiff/tifftags.html
-// https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
 type TagID uint16
 
 const (
@@ -1171,54 +1176,56 @@ type Tag struct {
 	DataOrOffsetToData uint32
 }
 
+func readTag(rawTagData []byte, byteReader binary.ByteOrder) Tag {
+	tagId := TagID(byteReader.Uint16(rawTagData[:2]))
+	tagDataType := TagDataType(byteReader.Uint16(rawTagData[2:4]))
+	nrValues := byteReader.Uint32(rawTagData[4:8])
+	pointerToTagData := byteReader.Uint32(rawTagData[8:12])
+	tag := Tag{tagId, tagDataType, nrValues, pointerToTagData}
+	return tag
+}
+
+func readIFD(rawData []byte, byteReader binary.ByteOrder) IFD {
+	nrTags := byteReader.Uint16(rawData[:2])
+
+	var currentPosition = 2
+	tags := []Tag{}
+	for i := 0; i < int(nrTags); i++ {
+		rawTagData := rawData[currentPosition : currentPosition+12]
+		tag := readTag(rawTagData, byteReader)
+		tags = append(tags, tag)
+		currentPosition += 12
+	}
+
+	offsetToNextIFD := byteReader.Uint32(rawData[currentPosition : currentPosition+4])
+
+	ifd := IFD{nrTags, tags, offsetToNextIFD}
+	return ifd
+}
+
+func readIFDs(rawData []byte, offsetToFirstIFD uint32, byteReader binary.ByteOrder) []IFD {
+	ifds := []IFD{}
+	var currentPosition = offsetToFirstIFD
+	for {
+		ifd := readIFD(rawData[currentPosition:], byteReader)
+		ifds = append(ifds, ifd)
+		if ifd.OffsetToNextIFD == 0 {
+			break
+		}
+		currentPosition = ifd.OffsetToNextIFD
+	}
+	return ifds
+}
+
 func main() {
 
 	fileUrl := "http://localhost:8000/testfile.tiff"
 	rawData, _ := fetchHead(fileUrl, 4000)
+	byteReader, _ := readByteOrder(rawData[0:2])
 
-	byteOrder, _ := readByteOrder(rawData[0:2])
+	offsetToFirstIFD := byteReader.Uint32(rawData[4:8])
 
-	version, _ := readVersion(rawData[2:4], byteOrder)
-
-	offsetToFirstIFD := byteOrder.Uint32(rawData[4:8])
-
-	fmt.Printf("version: %d\noffset: %d\n", version, offsetToFirstIFD)
-
-	ifds := []IFD{}
-	var currentPosition = offsetToFirstIFD
-	for {
-
-		nrTags := byteOrder.Uint16(rawData[currentPosition : currentPosition+2])
-
-		currentPosition += 2
-		tags := []Tag{}
-		for i := 0; i < int(nrTags); i++ {
-			rawTagData := rawData[currentPosition : currentPosition+12]
-
-			tagId := TagID(byteOrder.Uint16(rawTagData[:2]))
-			tagDataType := TagDataType(byteOrder.Uint16(rawTagData[2:4]))
-			nrValues := byteOrder.Uint32(rawTagData[4:8])
-			pointerToTagData := byteOrder.Uint32(rawTagData[8:12])
-			tag := Tag{tagId, tagDataType, nrValues, pointerToTagData}
-			tags = append(tags, tag)
-
-			// fmt.Printf("IDF %d -- tag-nr %d, offset: %d:  ", ifdNr, i, currentPosition)
-			// fmt.Print(tag)
-			// fmt.Printf("\n")
-
-			currentPosition += 12
-		}
-
-		offsetToNextIFD := byteOrder.Uint32(rawData[currentPosition : currentPosition+4])
-
-		ifds = append(ifds, IFD{nrTags, tags, offsetToNextIFD})
-
-		if offsetToNextIFD == 0 {
-			break
-		}
-
-		currentPosition = offsetToNextIFD
-	}
+	ifds := readIFDs(rawData, offsetToFirstIFD, byteReader)
 
 	for _, ifd := range ifds {
 		fmt.Print(ifd)
