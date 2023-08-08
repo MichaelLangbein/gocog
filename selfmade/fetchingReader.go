@@ -41,12 +41,6 @@ func MakeFetchingReader(fileUrl string) *FetchingReader {
 	}
 }
 
-func (r *FetchingReader) getOffsetFor(start int64) (int64, int64) {
-	nearest := int64(r.fetchBytes) * (start / int64(r.fetchBytes))
-	offFromNearest := start % int64(r.fetchBytes)
-	return nearest, offFromNearest
-}
-
 func (r *FetchingReader) getKeysFor(start int64, length int) []int64 {
 	nearest := int64(r.fetchBytes) * (start / int64(r.fetchBytes))
 	keys := []int64{}
@@ -75,19 +69,29 @@ func (r *FetchingReader) getDataAt(off int64, nrBytes int) ([]byte, error) {
 	outputData := make([]byte, nrBytes)
 	outputPos := 0
 
-	for _, key := range keys {
+	for j, key := range keys {
 		keyData, err := r.getDataForKey(key)
 		if err != nil {
 			return outputData, err
 		}
-		for i, keyVal := range keyData {
-			pos := key + int64(i)
-			if off <= pos && pos < (off+int64(nrBytes)) {
-				outputData[outputPos] = keyVal
-				outputPos += 1
-			}
+
+		var startIndex int64 = 0
+		if j <= 0 {
+			startIndex = off - key
+		}
+		var endIndex int64 = int64(r.fetchBytes)
+		if j >= len(keys)-1 {
+			endIndex = (off + int64(nrBytes)) - key
+		}
+		// if (startIndex == 0 && endIndex == int64(r.fetchBytes)) {
+		// 	copy(outputData,
+		// }
+		for i := startIndex; i < endIndex; i++ {
+			outputData[outputPos] = keyData[i]
+			outputPos += 1
 		}
 	}
+
 	return outputData, nil
 }
 
@@ -106,9 +110,7 @@ func (r *FetchingReader) ReadAt(p []byte, off int64) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	for i, val := range data {
-		p[i] = val
-	}
+	copy(p, data)
 	if len(data) < len(p) {
 		return len(data), fmt.Errorf("something went wrong ... did you reach the end of the file?")
 	}
@@ -164,7 +166,7 @@ func (r *FetchingReader) Read(p []byte) (n int, err error) {
 * the size of the underlying object the behavior of subsequent I/O operations
 * is implementation-dependent.
  */
-func (r FetchingReader) Seek(offset int64, whence int) (int64, error) {
+func (r *FetchingReader) Seek(offset int64, whence int) (int64, error) {
 	switch whence {
 	default:
 		return 0, errors.New("Seek: invalid whence")
