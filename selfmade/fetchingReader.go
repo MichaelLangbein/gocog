@@ -5,7 +5,26 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 )
+
+func fetchSize(fileUrl string) (int, error) {
+	fmt.Printf("Getting size of %s", fileUrl)
+	req, err := http.NewRequest(http.MethodHead, fileUrl, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return 0, err
+	}
+
+	contentLength := res.Header.Get("Content-Length")
+	clInt, err := strconv.Atoi(contentLength)
+
+	return clInt, nil
+}
 
 func fetchRange(fileUrl string, startByte int64, nrBytes int) ([]byte, error) {
 	fmt.Printf("Fetching bytes %d-%d", startByte, startByte+int64(nrBytes))
@@ -115,6 +134,18 @@ func (r *FetchingReader) ReadAt(p []byte, off int64) (n int, err error) {
 		return len(data), fmt.Errorf("something went wrong ... did you reach the end of the file?")
 	}
 	return len(data), nil
+}
+
+// Size() is used as a probe to determine wether the given key exists, and should return
+// an error if no such key exists. The actual file size may or may not be effectively used
+// depending on the underlying GDAL driver opening the file
+//
+// It may also optionally implement KeyMultiReader which will be used (only?) by
+// the GTiff driver when reading pixels. If not provided, this
+// VSI implementation will concurrently call ReadAt([]byte,int64)
+func (r *FetchingReader) Size(key string) (int64, error) {
+	size, err := fetchSize(r.fileUrl)
+	return int64(size), err
 }
 
 /*

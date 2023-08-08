@@ -38,6 +38,11 @@ func ReadVersion(word []byte, byteOrder binary.ByteOrder) (uint16, error) {
 	return version, nil
 }
 
+func ReadOffsetToFirstIFD(rawData []byte, byteReader binary.ByteOrder) uint32 {
+	offsetToFirstIFD := byteReader.Uint32(rawData[4:8])
+	return offsetToFirstIFD
+}
+
 type TagID uint16
 
 const (

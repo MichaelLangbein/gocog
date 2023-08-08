@@ -17,6 +17,8 @@ package main
  6. get tile
  ............. official lib doesn't really do this?
  ............. try those:
+		- godal
+				- Wants to fetch full image immediately, I think
 		- https://github.com/gden173/geotiff/blob/main/geotiff/reader.go
 				- AtCoord
 				- AtPoints ......... both require file to have been read yet.
@@ -32,6 +34,7 @@ package main
 				......... hmmm ... doesn't compile
 
 
+
  7. decompress tile
  8. get all tiles
 */
@@ -40,6 +43,7 @@ import (
 	"fmt"
 	"gocog/gocog"
 	"gocog/selfmade"
+	// "github.com/airbusgeo/godal"
 )
 
 func main() {
@@ -54,4 +58,7 @@ func main() {
 	img, _ := gocog.DecodeLevel(cogReader, 3)
 	fmt.Print(img)
 
+	// godal.RegisterVSIHandler("http://", cogReader)
+	// file, _ := godal.Open(fileUrl)
+	// fmt.Print(file.Description())
 }
