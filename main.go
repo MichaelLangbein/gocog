@@ -21,6 +21,8 @@ import (
 	"gocog/selfmade"
 
 	"github.com/google/tiff"
+	_ "github.com/google/tiff/geotiff" // imported for side effect
+	"github.com/google/tiff/image"
 )
 
 func main() {
@@ -33,4 +35,8 @@ func main() {
 	firstIfd := t.IFDs()[0]
 	// tileOffsetsField := firstIfd.GetField(324)
 	fmt.Print(firstIfd.Fields())
+
+	cogReader2 := selfmade.MakeFetchingReader(fileUrl)
+	img, _ := image.Decode(cogReader2)
+	fmt.Print(img)
 }
