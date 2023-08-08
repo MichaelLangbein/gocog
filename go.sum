@@ -1,5 +1,13 @@
 github.com/google/tiff v0.0.0-20161109161721-4b31f3041d9a h1:Mi5lnNcpqYN2M2J52gy1uknSRhfA9BBAPVBd5XfHi+U=
 github.com/google/tiff v0.0.0-20161109161721-4b31f3041d9a/go.mod h1:gpYY+jaYz1cbbiPKT9p2ReLdpBTvTRqoKwJ21LdEk+4=
+github.com/jh-sz/cog v0.0.0-20201127055223-45b0a00e2ffe h1:K8CfGzEBUTDAci4XkENpR7GzI6vJvoufNjEmu/sNN58=
+github.com/jh-sz/cog v0.0.0-20201127055223-45b0a00e2ffe/go.mod h1:XnUJc/K3DXBvrN4Js2SujsBkirOdTVs7ht0F3qiel4I=
+github.com/superztc/gocog v0.0.0-20180610141759-8c76e7f84b41 h1:H3ORnbwiWeIePH/x3mcWyzH0taC0Nkj28Fvx2qXUrbY=
+github.com/superztc/gocog v0.0.0-20180610141759-8c76e7f84b41/go.mod h1:wdLnLSwoSTG7Qm3m6SMiWYtezf4v0yxw4R5zFrXpLAo=
+github.com/terrascope/gocog v0.0.0-20180610141759-8c76e7f84b41 h1:Hok0duAxoO4+eqmaWS+qc+Ha/l7KSnHYTlfyc+v/OGU=
+github.com/terrascope/gocog v0.0.0-20180610141759-8c76e7f84b41/go.mod h1:+sPsknR4a9Mt80bz0G7uklFGyqm9IR6Deiw8ITKZ6xg=
+github.com/terrascope/scimage v0.0.0-20200814045938-7a5e784411e8 h1:LD2muIJbf3qZA1+M6etITjNVEq3xRWNgvVL1/HsQk2Y=
+github.com/terrascope/scimage v0.0.0-20200814045938-7a5e784411e8/go.mod h1:87f/46jMdJWq6Sulm2QTSVvnp4sgC5O3T0AoJQyZNr0=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
