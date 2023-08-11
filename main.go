@@ -43,7 +43,8 @@ import (
 	"fmt"
 	"gocog/gocog"
 	"gocog/selfmade"
-	// "github.com/airbusgeo/godal"
+	"github.com/airbusgeo/godal"
+	"github.com/airbusgeo/"
 )
 
 func main() {
